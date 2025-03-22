@@ -6,7 +6,7 @@ const pageantSchema = new mongoose.Schema({
   endDate: { type: Date, required: true },
   status: { 
     type: String, 
-    enum: ['upcoming', 'ongoing', 'past'], 
+    enum: ['Upcoming', 'ongoing', 'past'], 
     default: 'upcoming' 
   }
 }, { timestamps: true });
