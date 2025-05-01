@@ -24,7 +24,8 @@ exports.createModel = async (req, res) => {
         const { name, bio, images, pageantId } = req.body;
 
         const pageant = await Pageant.findById(pageantId);
-        if (!pageant) return res.status(404).json({ message: "Pageant not found" });
+if (!pageant) return res.status(404).json({ message: "Pageant not found" });
+
 
         const model = new Model({ name, bio, images, pageantId });
         await model.save();
