@@ -8,9 +8,14 @@ const modelRoutes = require('./routes/modelRoutes');
 
 const app = express();
 
+
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+const uploadRoutes = require("./routes/uploadRoutes");
+app.use("/api/upload", uploadRoutes);
+
 
 // Health check route
 app.get('/', (req, res) => {
