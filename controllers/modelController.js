@@ -237,3 +237,8 @@ exports.getTopModels = async (req, res) => {
         res.status(500).json({ message: "An error occurred while fetching top models." });
     }
 };
+
+exports.getVotesData = (req, res) => {
+    const votesData = JSON.parse(localStorage.getItem("voteData")) || { votes: 0 };
+    res.status(200).json(votesData);
+}
