@@ -19,22 +19,62 @@ function resetVotesIfNeeded(ip) {
 }
 
 // Create a new model
+// controllers/modelController.js
 exports.createModel = async (req, res) => {
     try {
         const { name, bio, images, pageantId } = req.body;
 
+        // Validate required fields
+        if (!name || !bio || !images || !pageantId) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "Missing required fields" 
+            });
+        }
+
+        // Validate images array
+        if (!Array.isArray(images) || images.length === 0) {
+            return res.status(400).json({ 
+                success: false, 
+                message: "At least one image is required" 
+            });
+        }
+
         const pageant = await Pageant.findById(pageantId);
-if (!pageant) return res.status(404).json({ message: "Pageant not found" });
+        if (!pageant) {
+            return res.status(404).json({ 
+                success: false, 
+                message: "Pageant not found" 
+            });
+        }
 
+        const model = new Model({
+            name,
+            bio,
+            images,
+            pageantId
+        });
 
-        const model = new Model({ name, bio, images, pageantId });
         await model.save();
-        res.status(201).json(model);
+        
+        // Populate pageant info before sending response
+        const populatedModel = await Model.findById(model._id).populate("pageantId");
+
+        res.status(201).json({
+            success: true,
+            message: "Model created successfully",
+            model: populatedModel
+        });
     } catch (error) {
         console.error("Error creating model:", error);
-        res.status(500).json({ message: "An error occurred while creating the model." });
+        res.status(500).json({ 
+            success: false, 
+            message: "An error occurred while creating the model",
+            error: error.message
+        });
     }
 };
+
 
 // Get all models
 exports.getAllModels = async (req, res) => {
@@ -103,19 +143,40 @@ exports.updateModel = async (req, res) => {
 };
 
 // Delete model
+// controllers/modelController.js
 exports.deleteModel = async (req, res) => {
     try {
         const { id } = req.params;
-        const model = await Model.findByIdAndDelete(id);
+        const model = await Model.findById(id);
 
-        if (!model) return res.status(404).json({ message: "Model not found" });
+        if (!model) {
+            return res.status(404).json({ message: "Model not found" });
+        }
 
-        res.status(200).json({ message: "Model deleted successfully" });
+        // Delete images from Cloudinary
+        if (model.images && model.images.length > 0) {
+            for (const imageUrl of model.images) {
+                const publicId = imageUrl.split('/').pop().split('.')[0];
+                await cloudinary.uploader.destroy(`models/${publicId}`);
+            }
+        }
+
+        await Model.findByIdAndDelete(id);
+
+        res.status(200).json({ 
+            success: true,
+            message: "Model and associated images deleted successfully" 
+        });
     } catch (error) {
         console.error("Error deleting model:", error);
-        res.status(500).json({ message: "An error occurred while deleting the model." });
+        res.status(500).json({ 
+            success: false,
+            message: "An error occurred while deleting the model",
+            error: error.message
+        });
     }
 };
+
 
 // Add vote to model with IP tracking
 exports.addVote = async (req, res) => {

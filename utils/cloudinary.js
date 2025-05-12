@@ -8,12 +8,24 @@ cloudinary.config({
   api_secret: process.env.CLOUD_SECRET,
 });
 
+// console.log("Cloudinary ENV Check:", {
+//   CLOUD_NAME: process.env.CLOUD_NAME,
+//   CLOUD_KEY: process.env.CLOUD_KEY,
+//   CLOUD_SECRET: process.env.CLOUD_SECRET,
+// });
+
+
 const storage = new CloudinaryStorage({
-  cloudinary,
+  cloudinary: cloudinary,
   params: {
     folder: "models",
     allowed_formats: ["jpg", "jpeg", "png"],
-  },
+    transformation: [{ width: 500, height: 500, crop: "limit" }], // Optional: resize images
+    public_id: (req, file) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      return `model-${uniqueSuffix}`;
+    }
+  }
 });
 
 module.exports = {
