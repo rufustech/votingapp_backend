@@ -1,5 +1,6 @@
 const Model = require("../models/Models");
 const Pageant = require("../models/PageantModel");
+const { incrementModelVotes } = require('../utils/voting');
 
 const MAX_VOTES_PER_DAY = 4; // Configurable daily vote limit
 const voteTracker = {}; // { "IP_ADDRESS": { count: X, lastReset: "YYYY-MM-DD" } }
@@ -19,6 +20,26 @@ function resetVotesIfNeeded(ip) {
 }
 
 // Create a new model
+exports.addVote = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const ip = getUserIP(req);
+
+    resetVotesIfNeeded(ip);
+
+    if (voteTracker[ip].count >= MAX_VOTES_PER_DAY) {
+      return res.status(403).json({ message: "Vote limit reached. Try again tomorrow." });
+    }
+
+    const model = await incrementModelVotes(id, 1);
+    voteTracker[ip].count += 1;
+
+    res.status(200).json({ model, votesLeft: MAX_VOTES_PER_DAY - voteTracker[ip].count });
+  } catch (error) {
+    console.error("Error adding vote:", error);
+    res.status(500).json({ message: "An error occurred while voting." });
+  }
+};
 // controllers/modelController.js
 exports.createModel = async (req, res) => {
     try {
@@ -177,35 +198,65 @@ exports.deleteModel = async (req, res) => {
     }
 };
 
+// Add paid votes to a model
+// controllers/modelController.js
+exports.addPaidVotes = async (req, res) => {
+  const { id } = req.params;
+  const { votes } = req.body;
+
+  if (!votes || isNaN(votes)) {
+    return res.status(400).json({ message: "Invalid number of votes" });
+  }
+
+  try {
+    const model = await Model.findByIdAndUpdate(
+      id,
+      { $inc: { votes: parseInt(votes, 10) } },
+      { new: true }
+    );
+
+    if (!model) {
+      return res.status(404).json({ message: "Model not found" });
+    }
+
+    res.status(200).json({ message: "Votes updated", model });
+  } catch (error) {
+    console.error("❌ Error updating votes:", error.message);
+    res.status(500).json({ message: "Failed to update votes" });
+  }
+};
+
+
+
 
 // Add vote to model with IP tracking
-exports.addVote = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const ip = getUserIP(req);
+// exports.addVote = async (req, res) => {
+//     try {
+//         const { id } = req.params;
+//         const ip = getUserIP(req);
 
-        resetVotesIfNeeded(ip);
+//         resetVotesIfNeeded(ip);
 
-        if (voteTracker[ip].count >= MAX_VOTES_PER_DAY) {
-            return res.status(403).json({ message: "Vote limit reached. Try again tomorrow." });
-        }
+//         if (voteTracker[ip].count >= MAX_VOTES_PER_DAY) {
+//             return res.status(403).json({ message: "Vote limit reached. Try again tomorrow." });
+//         }
 
-        const model = await Model.findByIdAndUpdate(
-            id,
-            { $inc: { votes: 1 } },
-            { new: true }
-        ).populate("pageantId");
+//         const model = await Model.findByIdAndUpdate(
+//             id,
+//             { $inc: { votes: 1 } },
+//             { new: true }
+//         ).populate("pageantId");
 
-        if (!model) return res.status(404).json({ message: "Model not found" });
+//         if (!model) return res.status(404).json({ message: "Model not found" });
 
-        voteTracker[ip].count += 1;
+//         voteTracker[ip].count += 1;
 
-        res.status(200).json({ model, votesLeft: MAX_VOTES_PER_DAY - voteTracker[ip].count });
-    } catch (error) {
-        console.error("Error adding vote:", error);
-        res.status(500).json({ message: "An error occurred while voting." });
-    }
-};
+//         res.status(200).json({ model, votesLeft: MAX_VOTES_PER_DAY - voteTracker[ip].count });
+//     } catch (error) {
+//         console.error("Error adding vote:", error);
+//         res.status(500).json({ message: "An error occurred while voting." });
+//     }
+// };
 
 // Reset model votes
 exports.resetVotes = async (req, res) => {

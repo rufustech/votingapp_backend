@@ -23,6 +23,9 @@ router.delete("/:id", modelController.deleteModel);
 // Add vote to model
 router.post("/:id/vote", modelController.addVote);
 
+// ✅ Add paid votes route (correct path)
+router.post("/:id/add-votes", modelController.addPaidVotes);
+
 // Reset model votes
 router.post("/:id/reset-votes", modelController.resetVotes);
 

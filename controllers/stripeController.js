@@ -1,75 +1,115 @@
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
-const Models = require('../models/Models');
+stripe.apiVersion = '2025-04-30';
 
+const { incrementModelVotes } = require('../utils/voting');
 
+// Create Checkout Session
 exports.createCheckoutSession = async (req, res) => {
-  const { modelId,name,  votes, successUrl, cancelUrl } = req.body;
+  const { modelId, name, votes, amount, cancelUrl } = req.body;
 
-  try {
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      mode: 'payment',
-      line_items: [
-        {
-          price_data: {
-            currency: 'usd',
-            unit_amount: 50, // $0.50 per vote
-            product_data: {
-              name: `Votes for ${name}`,
-              description: `Votes Qty: ${votes}, $0.50 each`,
-            },
-          },
-          quantity: votes,
-        },
-      ],
+  console.log('🟡 Creating checkout session with:', { modelId, name, votes, amount });
+
+  if (!modelId || !name || !votes || !amount) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+try {
+  // ✅ Create Stripe product
+  const product = await stripe.products.create({
+    name: `Votes for ${name}`,
+  });
+
+  // ✅ Create Checkout Session
+  const session = await stripe.checkout.sessions.create({
+    payment_method_types: ['card'],
+    mode: 'payment',
+    locale: 'en',
+    metadata: {
+      modelId,
+      votes: votes.toString(),
+    },
+    payment_intent_data: {
       metadata: {
-        modelId: req.body.modelId,
+        modelId,
         votes: votes.toString(),
       },
-      success_url: req.body.successUrl,
-      cancel_url: req.body.cancelUrl,
-    });
-    
+    },
+    line_items: [
+      {
+        price_data: {
+          currency: 'usd',
+          unit_amount: Math.round(amount * 100),
+          product: product.id, // ✅ This now works
+        },
+        quantity: 1,
+      },
+    ],
+    success_url: `http://localhost:3000/ranking?payment_success=true&modelId=${modelId}&votes=${votes}`,
+    cancel_url: cancelUrl || 'http://localhost:3000/vote-cancel',
+  });
 
-    res.json({ id: session.id });
-  } catch (error) {
-    console.error('Stripe error:', error);
-    res.status(500).json({ error: error.message });
-  }
-};
+  console.log('✅ Session created with metadata:', session.metadata);
+  res.status(200).json({ id: session.id });
 
+} catch (error) {
+  console.error('❌ Error creating checkout session:', error.message);
+  res.status(500).json({ error: error.message });
+}
+}
+
+
+// Webhook Handler
 exports.webhookHandler = async (req, res) => {
   const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
   const sig = req.headers['stripe-signature'];
-
   let event;
 
   try {
     event = stripe.webhooks.constructEvent(req.body, sig, endpointSecret);
+    console.log("📨 Stripe Event Type:", event.type);
   } catch (err) {
-    console.error('❌ Webhook signature error:', err.message);
+    console.error("❌ Webhook signature verification failed:", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const modelId = session.metadata.modelId;
-    const votesToAdd = parseInt(session.metadata?.votes || "0", 10);
+if (event.type === 'checkout.session.completed') {
+  const session = event.data.object;
+  const paymentIntentId = session.payment_intent;
 
-    if (isNaN(votesToAdd) || votesToAdd <= 0) {
-  console.warn(`⚠️ Invalid vote count: "${session.metadata?.votes}"`);
-  return res.status(400).json({ message: "Invalid vote count" });
+  if (!paymentIntentId) {
+    console.warn("⚠️ No payment_intent found in session");
+    return;
+  }
+
+  try {
+    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    const metadata = paymentIntent.metadata;
+
+    const modelId = metadata.modelId;
+    const votesToAdd = parseInt(metadata.votes || "0", 10);
+
+    if (!modelId || isNaN(votesToAdd) || votesToAdd <= 0) {
+      console.warn("⚠️ Invalid or missing modelId/votes in PaymentIntent metadata");
+      return;
+    }
+
+    const updatedModel = await Model.findByIdAndUpdate(
+      modelId,
+      { $inc: { votes: votesToAdd } },
+      { new: true }
+    );
+
+    if (!updatedModel) {
+      console.error(`❌ Model not found: ${modelId}`);
+    } else {
+      console.log(`✅ Added ${votesToAdd} votes to model "${updatedModel.name}"`);
+    }
+  } catch (err) {
+    console.error("❌ Failed to retrieve PaymentIntent or update model:", err.message);
+  }
 }
 
-    try {
-      await Models.findByIdAndUpdate(modelId, { $inc: { votes: votesToAdd } });
-      console.log(`✅ Added ${votesToAdd} votes to model ${modelId}`);
-    } catch (err) {
-      console.error('❌ Database update error:', err.message);
-    }
-  }
 
   res.status(200).json({ received: true });
 };
-
 
