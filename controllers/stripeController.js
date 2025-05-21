@@ -44,12 +44,17 @@ try {
         quantity: 1,
       },
     ],
-    success_url: `http://localhost:3000/ranking?payment_success=true&modelId=${modelId}&votes=${votes}`,
-    cancel_url: cancelUrl || 'http://localhost:3000/vote-cancel',
+    // success_url: `http://localhost:3000/ranking?payment_success=true&modelId=${modelId}&votes=${votes}`,
+    // cancel_url: cancelUrl || 'http://localhost:3000/vote-cancel',
+    success_url: `https://votes.co.zw/ranking?payment_success=true&modelId=${modelId}&votes=${votes}`,
+    cancel_url: cancelUrl || 'https://votes.co.zw/vote-cancel',
+
   });
 
   console.log('✅ Session created with metadata:', session.metadata);
   res.status(200).json({ id: session.id });
+  // res.status(200).json({ url: session.url }); // ✅ return the checkout URL
+
 
 } catch (error) {
   console.error('❌ Error creating checkout session:', error.message);
