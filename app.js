@@ -21,9 +21,17 @@ const modelRoutes = require('./routes/modelRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
 
 // ✅ CORS
+const allowedOrigins = ['http://localhost:3000', 'https://votes.co.zw'];
+
 app.use(cors({
-  origin: ['http://localhost:3000', 'https://votingapp-backend-mohg.onrender.com'],
-  methods: ['GET', 'POST'],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS not allowed'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type'],
 }));
 
