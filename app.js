@@ -22,10 +22,11 @@ const stripeRoutes = require('./routes/stripeRoutes');
 
 // ✅ CORS
 app.use(cors({
-  origin: 'http://localhost:3000',
+  origin: ['http://localhost:3000', 'https://votingapp-backend-mohg.onrender.com'],
   methods: ['GET', 'POST'],
   allowedHeaders: ['Content-Type'],
 }));
+
 
 // ✅ Routes (after JSON parser)
 app.use('/api/upload', uploadRoutes);
