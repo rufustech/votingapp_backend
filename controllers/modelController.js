@@ -3,8 +3,8 @@ const Pageant = require("../models/PageantModel");
 const { cloudinary } = require("../utils/cloudinary");
 const { incrementModelVotes } = require('../utils/voting');
 
-const MAX_VOTES_PER_DAY = 4; // Configurable daily vote limit
-const voteTracker = {}; // { "IP_ADDRESS": { count: X, lastReset: "YYYY-MM-DD" } }
+const MAX_VOTES_PER_DAY = 4; 
+const voteTracker = {}; 
 
 // Get the user's real IP address, considering proxies
 function getUserIP(req) {
