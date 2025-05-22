@@ -1,5 +1,6 @@
 const Model = require("../models/Models");
 const Pageant = require("../models/PageantModel");
+const { cloudinary } = require("../utils/cloudinary");
 const { incrementModelVotes } = require('../utils/voting');
 
 const MAX_VOTES_PER_DAY = 4; // Configurable daily vote limit

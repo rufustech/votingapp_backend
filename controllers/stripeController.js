@@ -46,13 +46,21 @@ try {
     ],
     // success_url: `http://localhost:3000/ranking?payment_success=true&modelId=${modelId}&votes=${votes}`,
     // cancel_url: cancelUrl || 'http://localhost:3000/vote-cancel',
-    success_url: `https://votes.co.zw/ranking?payment_success=true&modelId=${modelId}&votes=${votes}`,
-    cancel_url: cancelUrl || 'https://votes.co.zw/vote-cancel',
+      success_url: `https://votes.co.zw/ranking?payment_success=true&modelId=${modelId}&votes=${votes}&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: cancelUrl || 'https://votes.co.zw/vote-cancel',
 
   });
 
-  console.log('✅ Session created with metadata:', session.metadata);
-  res.status(200).json({ id: session.id });
+  
+    console.log('✅ Session created with metadata:', session.metadata);
+    console.log('✅ Payment Intent Data:', session.payment_intent_data);
+    console.log('✅ Product created:', product.id);
+
+  
+    res.status(200).json({ 
+      id: session.id,
+      url: session.url 
+    });
   // res.status(200).json({ url: session.url }); // ✅ return the checkout URL
 
 
@@ -83,7 +91,8 @@ if (event.type === 'checkout.session.completed') {
 
   if (!paymentIntentId) {
     console.warn("⚠️ No payment_intent found in session");
-    return;
+     return res.status(400).json({ error: "No payment intent found" });
+   
   }
 
   try {

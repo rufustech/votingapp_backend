@@ -2,34 +2,24 @@ const express = require("express");
 const router = express.Router();
 const modelController = require("../controllers/modelController");
 
-// Create a new model
+// Create
 router.post("/", modelController.createModel);
 
-// Get all models
+// Read
 router.get("/", modelController.getAllModels);
-
-// Get a single model by ID
+router.get("/top", modelController.getTopModels);
+router.get("/pageant/:pageantId", modelController.getModelsByPageant);
 router.get("/:id", modelController.getModelById);
 
-// Get models by pageant
-router.get("/pageant/:pageantId", modelController.getModelsByPageant);
-
-// Update model
+// Update
 router.put("/:id", modelController.updateModel);
 
-// Delete model
+// Delete
 router.delete("/:id", modelController.deleteModel);
 
-// Add vote to model
+// Voting
 router.post("/:id/vote", modelController.addVote);
-
-// ✅ Add paid votes route (correct path)
 router.post("/:id/add-votes", modelController.addPaidVotes);
-
-// Reset model votes
 router.post("/:id/reset-votes", modelController.resetVotes);
-
-// Get top voted models
-router.get("/top", modelController.getTopModels);
 
 module.exports = router;
