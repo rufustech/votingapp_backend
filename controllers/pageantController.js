@@ -3,8 +3,8 @@ const Pageant = require("../models/PageantModel");
 // Create a new pageant
 exports.createPageant = async (req, res) => {
   try {
-    const { name, startDate, endDate } = req.body;
-    const pageant = new Pageant({ name, startDate, endDate });
+    const { name, pageantId, startDate, endDate } = req.body;
+    const pageant = new Pageant({ name, pageantId, startDate, endDate });
     await pageant.save();
     res.status(201).json(pageant);
   } catch (error) {
@@ -55,33 +55,19 @@ exports.getPastPageants = async (req, res) => {
   }
 };
 
-// Update pageant
+// Update a pageant
 exports.updatePageant = async (req, res) => {
   try {
     const { id } = req.params;
     const pageant = await Pageant.findByIdAndUpdate(
       id,
-      { ...req.body },
+      req.body,
       { new: true, runValidators: true }
     );
     if (!pageant) {
       return res.status(404).json({ message: "Pageant not found" });
     }
     res.status(200).json(pageant);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Delete pageant
-exports.deletePageant = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const pageant = await Pageant.findByIdAndDelete(id);
-    if (!pageant) {
-      return res.status(404).json({ message: "Pageant not found" });
-    }
-    res.status(200).json({ message: "Pageant deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -101,6 +87,20 @@ exports.updatePageantStatus = async (req, res) => {
       return res.status(404).json({ message: "Pageant not found" });
     }
     res.status(200).json(pageant);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Delete a pageant
+exports.deletePageant = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const pageant = await Pageant.findByIdAndDelete(id);
+    if (!pageant) {
+      return res.status(404).json({ message: "Pageant not found" });
+    }
+    res.status(200).json({ message: "Pageant deleted successfully" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

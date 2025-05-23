@@ -7,8 +7,8 @@ const {
   getOngoingPageants,
   getPastPageants,
   updatePageant,
-  deletePageant,
-  updatePageantStatus
+  updatePageantStatus,
+  deletePageant
 } = require("../controllers/pageantController");
 
 router.post("/", createPageant);
@@ -21,4 +21,3 @@ router.patch("/:id/status", updatePageantStatus);
 router.delete("/:id", deletePageant);
 
 module.exports = router;
-

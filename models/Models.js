@@ -10,11 +10,15 @@ const modelSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
-  pageantId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Pageant',
-    required: true
-  }
+ pageantId: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'Pageant',
+  required: true
+},
+pageantSlug: {
+  type: String
+}
+
 }, { 
   timestamps: true,
   strict: true

@@ -111,6 +111,26 @@ exports.getAllModels = async (req, res) => {
     }
 };
 
+exports.getModelsByPageantSlug = async (req, res) => {
+  try {
+    const { slug } = req.params;
+
+    // Step 1: Find the pageant by slug
+    const pageant = await Pageant.findOne({ pageantSlug: slug });
+
+    if (!pageant) {
+      return res.status(404).json({ message: "Pageant not found" });
+    }
+
+    // Step 2: Find models by pageantId
+    const models = await Model.find({ pageantId: pageant._id });
+
+    res.status(200).json(models);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Get a single model by ID
 exports.getModelById = async (req, res) => {
     try {
