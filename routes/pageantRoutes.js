@@ -8,7 +8,8 @@ const {
   getPastPageants,
   updatePageant,
   updatePageantStatus,
-  deletePageant
+  deletePageant,
+  getPageantBySlug 
 } = require("../controllers/pageantController");
 
 router.post("/", createPageant);
@@ -17,6 +18,7 @@ router.get("/ongoing", getOngoingPageants);
 router.get("/past", getPastPageants);
 router.get("/:id", getPageantById);
 router.put("/:id", updatePageant);
+router.get("/slug/:slug", getPageantBySlug); 
 router.patch("/:id/status", updatePageantStatus);
 router.delete("/:id", deletePageant);
 

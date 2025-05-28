@@ -114,22 +114,24 @@ exports.getAllModels = async (req, res) => {
 exports.getModelsByPageantSlug = async (req, res) => {
   try {
     const { slug } = req.params;
+    console.log("🔍 Received slug:", slug); // ← Debug log
 
-    // Step 1: Find the pageant by slug
     const pageant = await Pageant.findOne({ pageantSlug: slug });
-
     if (!pageant) {
+      console.warn("⚠️ Pageant not found for slug:", slug);
       return res.status(404).json({ message: "Pageant not found" });
     }
 
-    // Step 2: Find models by pageantId
     const models = await Model.find({ pageantId: pageant._id });
+    console.log("✅ Found models:", models.length); // ← Log number of models
 
     res.status(200).json(models);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("❌ Error in getModelsByPageantSlug:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
+
 
 // Get a single model by ID
 exports.getModelById = async (req, res) => {
@@ -146,18 +148,16 @@ exports.getModelById = async (req, res) => {
 
 // Get models by pageant ID
 exports.getModelsByPageant = async (req, res) => {
-    try {
-        const { pageantId } = req.params;
-        const models = await Model.find({ pageantId })
-            .populate("pageantId")
-            .sort({ votes: -1 });
-
-        res.status(200).json(models);
-    } catch (error) {
-        console.error("Error fetching models by pageant:", error);
-        res.status(500).json({ message: "An error occurred while fetching models." });
-    }
+  try {
+    const { pageantId } = req.params;
+    const models = await Model.find({ pageantId }).sort({ votes: -1 });
+    res.status(200).json(models);
+  } catch (error) {
+    console.error("Error fetching models by pageant:", error);
+    res.status(500).json({ message: "An error occurred while fetching models." });
+  }
 };
+
 
 // Secure update model (prevents unwanted field updates)
 exports.updateModel = async (req, res) => {

@@ -8,8 +8,8 @@ router.post("/", modelController.createModel);
 // Read
 router.get("/", modelController.getAllModels);
 router.get("/top", modelController.getTopModels);
-router.get("/pageant/:slug", modelController.getModelsByPageantSlug);
-router.get("/pageant/:pageantId", modelController.getModelsByPageant);
+router.get("/pageant/id/:pageantId", modelController.getModelsByPageant);
+router.get("/pageant/slug/:slug", modelController.getModelsByPageantSlug);
 router.get("/:id", modelController.getModelById);
 
 // Update
