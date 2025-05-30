@@ -19,6 +19,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const pageantRoutes = require('./routes/pageantRoutes');
 const modelRoutes = require('./routes/modelRoutes');
 const stripeRoutes = require('./routes/stripeRoutes');
+const paynowRoutes = require('./routes/paynowRoutes');
 
 // ✅ CORS
 const allowedOrigins = ['http://localhost:3000', 'https://votes.co.zw'];
@@ -40,6 +41,7 @@ app.use(cors({
 app.use('/api/upload', uploadRoutes);
 app.use('/api/pageants', pageantRoutes);
 app.use('/api/models', modelRoutes);
+app.use('/api/paynow', paynowRoutes);
 app.use('/api/stripe', stripeRoutes); // only /create-checkout-session lives here
 
 // ✅ Health check

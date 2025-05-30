@@ -44,9 +44,9 @@ try {
         quantity: 1,
       },
     ],
-    // success_url: `http://localhost:3000/ranking?payment_success=true&modelId=${modelId}&votes=${votes}`,
+    // success_url: `http://localhost:3000/events?payment_success=true&modelId=${modelId}&votes=${votes}`,
     // cancel_url: cancelUrl || 'http://localhost:3000/vote-cancel',
-      success_url: `https://votes.co.zw/ranking?payment_success=true&modelId=${modelId}&votes=${votes}&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `https://votes.co.zw/events?payment_success=true&modelId=${modelId}&votes=${votes}&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: cancelUrl || 'https://votes.co.zw/vote-cancel',
 
   });
