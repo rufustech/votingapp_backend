@@ -1,3 +1,5 @@
+const Model = require('../models/Models');
+
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 stripe.apiVersion = '2025-04-30';
 
