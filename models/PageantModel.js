@@ -9,7 +9,7 @@ const pageantSchema = new mongoose.Schema({
   status: {
     type: String,
     enum: ['Upcoming', 'ongoing', 'past'],
-    default: 'Upcoming'
+    default: 'upcoming'
   }
 }, { timestamps: true });
 

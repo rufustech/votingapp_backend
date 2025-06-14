@@ -1,22 +1,32 @@
 const Pageant = require("../models/PageantModel");
-const slugify = require('slugify');
+const slugify = require("slugify"); // install if not already
 
-
-// Create a new pageant
 exports.createPageant = async (req, res) => {
-  const pageantSlug = slugify(name, { lower: true, strict: true });
   try {
-    const { name, pageantId, startDate, endDate } = req.body;
-    const pageantSlug = name.trim().toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
+    const { name, pageantId, startDate, endDate, status } = req.body;
 
-    const pageant = new Pageant({ name, pageantId, pageantSlug, startDate, endDate });
-    await pageant.save();
+    if (!name || !pageantId || !startDate || !endDate) {
+      return res.status(400).json({ message: "Required fields are missing." });
+    }
 
-    res.status(201).json(pageant);
+    const pageantSlug = slugify(name, { lower: true, strict: true });
+
+    const newPageant = await Pageant.create({
+      name,
+      pageantId,
+      pageantSlug,
+      startDate,
+      endDate,
+      status
+    });
+
+    res.status(201).json(newPageant);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error("Create pageant error:", error);
+    res.status(500).json({ message: "Failed to create pageant.", error });
   }
 };
+
 
 
 exports.getPageantBySlug = async (req, res) => {
