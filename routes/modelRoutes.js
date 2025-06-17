@@ -7,16 +7,16 @@ const { verifyInternalRequest } = require("../middleware/auth");
 router.post("/", modelController.createModel);
 
 // Read
-router.get("/", verifyInternalRequest, modelController.getAllModels);
-router.get("/top", verifyInternalRequest, modelController.getTopModels);
+router.get("/", modelController.getAllModels);
+router.get("/top", modelController.getTopModels);
 router.get(
   "/pageant/id/:pageantId",
-  verifyInternalRequest,
+
   modelController.getModelsByPageant
 );
 router.get(
   "/pageant/slug/:slug",
-  verifyInternalRequest,
+
   modelController.getModelsByPageantSlug
 );
 router.get("/:id", modelController.getModelById);
@@ -31,12 +31,12 @@ router.delete("/:id", modelController.deleteModel);
 router.post("/:id/vote", modelController.addVote);
 router.post(
   "/:id/add-votes",
-  verifyInternalRequest,
+
   modelController.addPaidVotes
 );
 router.post(
   "/:id/reset-votes",
-  verifyInternalRequest,
+
   modelController.resetVotes
 );
 
